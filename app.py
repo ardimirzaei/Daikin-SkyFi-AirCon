@@ -149,9 +149,9 @@ def toggle_power(n):
 def toggle_zone(n):
     # print(n)
     if n is not None and n > 0:        
-        return "success"
+        return ["success"]
     else:
-        return "secondary"
+        return ["secondary"]
     
     return 
 
