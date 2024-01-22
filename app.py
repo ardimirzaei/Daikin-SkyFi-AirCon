@@ -142,18 +142,18 @@ def toggle_power(n):
 
 
 
-@app.callback(
-    [Output('btn-Theatre', 'color')],
-    [Input('btn-Theatre', 'n_clicks')],
-)
-def toggle_zone(n):
-    # print(n)
-    if n > 0:        
-        return "success"
-    else:
-        return "secondary"
+# @app.callback(
+#     [Output('btn-Theatre', 'color')],
+#     [Input('btn-Theatre', 'n_clicks')],
+# )
+# def toggle_zone(n):
+#     # print(n)
+#     if n > 0:        
+#         return "success"
+#     else:
+#         return "secondary"
     
-    return 
+#     return 
 
 if __name__ == '__main__':
     app.run_server(host="0.0.0.0", port="8050", debug = True)
