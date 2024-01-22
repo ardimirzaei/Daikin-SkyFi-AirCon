@@ -108,12 +108,16 @@ def update_current_status(n):        # T8: The input va=riable should be changed
     cards = []
     for z in ["Theatre", "Gym", "Family","Beds"]:
         if z in aircon._zones:
-            c = dbc.Col(dbc.Card([dbc.CardBody([z])], color="success", inverse = True), width = 3, style={"opacity": 1 if aircon._operation_mode else 0.3})
-            cards.append(c)
+            # c = dbc.Col(dbc.Card([dbc.CardBody([z])], color="success", inverse = True), width = 3, style={"opacity": 1 if aircon._operation_mode else 0.3})
+            # cards.append(c)
+            b = dbc.Button(id = f'btn-{z}', children = z, color="success", style={"opacity": 1 if aircon._operation_mode else 0.3}, className="flex-md-fill")
+            cards.append(b)
         else:
-            cards.append(dbc.Col(dbc.Card([dbc.CardBody([z])], color="secondary", inverse = True), width = 3, style={"opacity": 0.3}))
+            # cards.append(dbc.Col(dbc.Card([dbc.CardBody([z])], color="secondary", inverse = True, outline = True), width = 3, style={"opacity": 0.3}))
+            b = dbc.Button(id = f'btn-{z}', children =  z, color="secondary", outline = True, style={"opacity":0.3}, className="flex-md-fill")
+            cards.append(b)
         
-        
+    cards = html.Div(cards, className="d-grid gap-2 d-md-flex justify-content-md-evenly")    
     return " ".join(aircon_values), f"Aircon is {on_off_options[int(aircon_values['opmode'])]}", cards
 
     
