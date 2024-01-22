@@ -22,8 +22,6 @@ load_dotenv()
 PASSWORD = os.environ.get("PASSWORD")
 AC_IP_ADDRESS = os.environ.get("AC_IP_ADDRESS")
 
-# df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder_unfiltered.csv')
-
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 
 server = flask.Flask(__name__) # define flask app.server
@@ -40,16 +38,13 @@ current_status_output = html.Div()
 on_off_button = html.Div()
 
 card = dbc.Card(
-    [
+    [dbc.CardHeader( html.H4("Aircon Status", className="card-title")), 
         dbc.CardImg(id = 'onoff_img',
             src="https://cdnl.iconscout.com/lottie/premium/thumb/air-conditioner-5558928-4647174.gif",
             top=True,
             style={"opacity": 0.3},
-        ),
-        dbc.CardImgOverlay(
-            dbc.CardBody(
+        ), dbc.CardBody(
                 [
-                    html.H4("Aircon Status", className="card-title"),
                     html.H5(children = [],
                         id = "h5-button-value",
                         className="card-text",
@@ -57,36 +52,26 @@ card = dbc.Card(
                     on_off_button,
                 ],
             ),
-        ),
     ],
     style={"width": "18rem"},
 )
 
+temperature = html.Div()
+set_temperature = html.Div()
+                 
 app.layout = html.Div([
     html.H1(children='Daikin SkyFi AirCon Unit', style={'textAlign':'center'}),
     intervals_input, 
     html.Div([
         dbc.Row(
             [ dbc.Col(card)
-                # dbc.Col(html.Div(f"Aircon is {on_off_options[int(aircon_values['opmode'])]}"),width=4),
-                # dbc.Col(html.Div("Row 0, Column 1"),width=4),
-                # dbc.Col(html.Div("Row 0, Column: 2"),width=4)
-            ]
+             , dbc.Col(set_temperature)
+             , dbc.Col(temperature)
+            ], 
+            className="flex-md-fill"
         ),
         dbc.Row(
             id = 'zones-cards'
-            #nz=8&zone1=Theatre&zone2=Gym&zone3=Family&zone4=Beds&zone5=Zone%205&zone6=Zone%206&zone7=Zone%207&zone8=Zone%208
-            # [ 
-            #     dbc.Col(dbc.Card(
-            #     [dbc.CardBody(["Theatre"])]), width = 3),
-            #     dbc.Col(dbc.Card(
-            #     [dbc.CardBody(["Gym"])]), width = 3),
-            #     dbc.Col(dbc.Card(
-            #     [dbc.CardBody(["Family"])]), width = 3),
-            #     dbc.Col(dbc.Card(
-            #     [dbc.CardBody(["Bedrooms"])]), width = 3)
-
-            # ]
         ), 
         # html.Br, html.Br, html.Br, html.Br, 
         html.P(children = [], id = "current-status" )
@@ -98,10 +83,15 @@ app.layout = html.Div([
 
 
 @app.callback(
-    [Output('current-status', 'children'), Output('h5-button-value', 'children'), Output('zones-cards', 'children')],
-    [Input(intervals_input, 'n_intervals')], # T8: Change this to have the dcc.store data as input
+    [
+     Output('current-status', 'children'), 
+     Output('h5-button-value', 'children'), 
+     Output('zones-cards', 'children'), 
+     Output(temperature, 'children')
+     ],
+    [Input(intervals_input, 'n_intervals')], 
 )
-def update_current_status(n):        # T8: The input va=riable should be changed to something like json_clean_data
+def update_current_status(n):        
     aircon.update()
     aircon_values = {i.split("=")[0]:i.split("=")[1] for i in aircon.current_data}
     
@@ -117,8 +107,15 @@ def update_current_status(n):        # T8: The input va=riable should be changed
             b = dbc.Button(id = f'btn-{z}', children =  z, color="secondary", outline = True, style={"opacity":0.3}, className="flex-md-fill")
             cards.append(b)
         
+    aircon_temp = dbc.Card([
+        dbc.CardHeader(html.H4("Temperature")), 
+        dbc.CardBody(html.P([
+            f"Aircon: {aircon_values['settemp']}", html.Br(), f"Room: {aircon_values['roomtemp']}", html.Br(), f"Outside: {aircon_values['outsidetemp']}"]), className="card-text")
+    ])
+    
+        
     cards = html.Div(cards, className="d-grid gap-2 d-md-flex justify-content-md-evenly")    
-    return " ".join(aircon_values), f"Aircon is {on_off_options[int(aircon_values['opmode'])]}", cards
+    return " ".join([f"{i}:{j}" for i,j in aircon_values.items()]), f"Aircon is {on_off_options[int(aircon_values['opmode'])]}", cards, aircon_temp
 
     
     
@@ -129,8 +126,8 @@ def update_current_status(n):        # T8: The input va=riable should be changed
 )
 def toggle_power(n):
     current_mode = aircon._operation_mode
-    print(f'Aircon is {current_mode}')
-    print(n)
+    # print(f'Aircon is {current_mode}')
+    # print(n)
     if n is not None and n > 0:
         new_mode = int(not current_mode )# Reverse it. 
         aircon.set_values(toggle_power = new_mode)
@@ -138,12 +135,27 @@ def toggle_power(n):
     else:
         pass
     
-    button = dbc.Button("Turn Off" if aircon._operation_mode else "Turn On" , color="primary" if aircon._operation_mode else "warning")
+    button = dbc.Button("Turn Off" if aircon._operation_mode else "Turn On" , color="primary" if aircon._operation_mode else "warning", className="flex-md-fill")
     card_img = "https://cdnl.iconscout.com/lottie/premium/thumb/air-conditioner-5558928-4647174.gif" if aircon._operation_mode else "https://miro.medium.com/v2/resize:fit:1400/1*Gvgic29bgoiGVLmI6AVbUg.gif" 
     
     return button, card_img
 
+
+
+@app.callback(
+    [Output('btn-Theatre', 'color')],
+    [Input('btn-Theatre', 'n_clicks')],
+)
+def toggle_zone(n):
+    # print(n)
+    if n > 0:        
+        return "success"
+    else:
+        return "secondary"
+    
+    return 
+
 if __name__ == '__main__':
-    app.run_server(host="0.0.0.0", port="8050", debug = False)
+    app.run_server(host="0.0.0.0", port="8050", debug = True)
     
     
