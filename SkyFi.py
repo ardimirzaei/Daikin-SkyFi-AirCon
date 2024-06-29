@@ -97,6 +97,7 @@ class SkyFi:
 
     def doQuery(self, payload):
         """send query to SkyFi"""
+        data = None
         retry_count = 5
         while retry_count > 0:
             retry_count = retry_count - 1
